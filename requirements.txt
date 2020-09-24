@@ -1,0 +1,2 @@
+blaseball-core-game-data
+blaseball-game-finder
