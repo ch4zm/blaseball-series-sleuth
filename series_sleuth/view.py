@@ -103,6 +103,9 @@ class TextView(BaseView):
             if label in ['opponentRecord', 'overallRecord']:
                 body.append("%-30s%s"%(at, "-".join([str(j) for j in data[label][at]])))
                 body.append("%-30s%s"%(ht, "-".join([str(j) for j in data[label][ht]])))
+            elif label in ['odds']:
+                body.append("%-30s%s%%"%(at, data[label][at]))
+                body.append("%-30s%s%%"%(ht, data[label][ht]))
             else:
                 body.append("%-30s%s"%(at, data[label][at]))
                 body.append("%-30s%s"%(ht, data[label][ht]))

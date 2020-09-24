@@ -22,7 +22,7 @@ setup(
     package_data = {
       'series_sleuth': ['data/*.json']
     },
-    description='blaseball-series-sleuth is a command line helper utility for finding blaseball game IDs',
+    description='blaseball-series-sleuth is a command line utility for getting info about blaseball series',
     url='https://github.com/ch4zm/blaseball-series-sleuth',
     author='Ch4zm of Hellmouth',
     author_email='ch4zm.of.hellmouth@gmail.com',
