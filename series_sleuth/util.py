@@ -88,11 +88,11 @@ class CaptureStdout(object):
         """
         # We want to swap out sys.stdout with
         # a StringIO object that will save stdout.
-        # 
+        #
         # Save the existing stdout object so we can
         # restore it when we're done
         self._stdout = sys.stdout
-        # Now swap out stdout 
+        # Now swap out stdout
         sys.stdout = self._stringio = StringIO()
         return self
 
@@ -114,5 +114,5 @@ class CaptureStdout(object):
         sys.stdout = self._stdout
 
     def __repr__(self):
-        """When this context manager is printed, it looks like the game ID string"""
+        """When this context manager is printed, it returns the catpured stdout"""
         return self.value

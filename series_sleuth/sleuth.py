@@ -186,15 +186,18 @@ class SleuthData(object):
                 # Series runs, until current game
                 sruns[ht] += series_score[ht]
                 sruns[at] += series_score[at]
-            
+
             # Series score, final
-            if series_score[ht] > series_score[at]:
-                ssf[ht] += 1
-            elif series_score[at] > series_score[ht]:
-                ssf[at] += 1
+            try:
+                if series_score[ht] > series_score[at]:
+                    ssf[ht] += 1
+                elif series_score[at] > series_score[ht]:
+                    ssf[at] += 1
+            except:
+                continue
 
 
-            # Series runs, final 
+            # Series runs, final
             srunsf[ht] += series_score[ht]
             srunsf[at] += series_score[at]
 
@@ -305,7 +308,7 @@ class SleuthData(object):
 
         # There are currently (always?) 3 playoffs rounds in the postseason.
         # This may change due to wild card/etc.
-        # 
+        #
         # The playoffs round is basically how many opponents they have seen
         # Round 1 = semi-semi-finals
         # Round 2 = semi-finals
@@ -412,7 +415,7 @@ class SleuthData(object):
 
     def overall_record(self, team, season, day):
         """
-        Returns the overall W/L record for the given 
+        Returns the overall W/L record for the given
         team UP TO BUT NOT INCLUDING the specified
         season and day. (Includes postseason games.)
 

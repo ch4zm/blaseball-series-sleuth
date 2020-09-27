@@ -3,7 +3,11 @@ import os
 import json
 import configargparse
 from .view import TextView, JsonView
-from .util import desanitize_dale, get_league_division_team_data
+from .util import (
+    desanitize_dale,
+    get_league_division_team_data,
+    CaptureStdout
+)
 
 
 def main(sysargs = sys.argv[1:]):
@@ -93,6 +97,12 @@ def main(sysargs = sys.argv[1:]):
     elif options.json:
         v = JsonView(options)
         v.show()
+
+
+def series_sleuth(sysargs):
+    with CaptureStdout() as so:
+        main(sysargs)
+    return str(so)
 
 
 if __name__ == '__main__':
