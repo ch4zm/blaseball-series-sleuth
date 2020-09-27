@@ -16,6 +16,9 @@ DALE_UTF8 = "Dal\u00e9" # for display
 FULL_DALE_SAFE = "Miami Dale" # for command line
 FULL_DALE_UTF8 = "Miami Dal\u00e9" # for display
 
+SEASON_MAX = 99  # never more than 99 games per season
+PLAYOFFS_MAX = SEASON_MAX + 20  # playoffs never go past 20 games
+
 
 class NoMatchingGames(Exception):
     pass

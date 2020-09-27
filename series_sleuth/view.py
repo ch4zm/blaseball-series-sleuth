@@ -89,26 +89,41 @@ class TextView(BaseView):
         labels_map = {
             'finalScore': 'Final Score',
             'odds': 'Odds',
-            'overallRecord': 'Overall WL Record (season, up to current game)',
-            'opponentRecord': 'WL Record vs Opponent (season, up to current game)',
-            'runsVersusOpponent': 'Runs vs Opponent (season, up to current game)',
-            'seriesRunsVersusOpponent': 'Runs vs Opponent (series, up to current game)',
-            'seriesRunsVersusOpponentFinal': 'Runs vs Opponent (series, final)',
-            'seriesScore': 'Series Record (up to current game)',
-            'seriesScoreFinal': 'Series Record (final)',
+            'seasonRecord': 'Season WL Record (up to current game)',
+            'seasonRecordFinal': 'Season WL Record (final)',
+            'opponentSeasonRecord': 'Season WL Record vs Opponent (up to current game)',
+            'opponentSeasonRecordFinal': 'Season WL Record vs Opponent (final)',
+            'seasonRunsVersusOpponent': 'Season Runs Scored vs Opponent (up to current game)',
+            'seasonRunsVersusOpponentFinal': 'Season Runs Scored vs Opponent (final)',
+            'playoffsRecord': 'Playoffs WL Record (up to current game)',
+            'playoffsRecordFinal': 'Playoffs WL Record (final)',
+            'opponentPlayoffsRecord': 'Playoffs WL Record vs Opponent (up to current game)',
+            'opponentPlayoffsRecordFinal': 'Playoffs WL Record vs Opponent (final)',
+            'playoffsRunsVersusOpponent': 'Playoffs Runs Scored vs Opponent (up to current game)',
+            'playoffsRunsVersusOpponentFinal': 'Playoffs Runs Scored vs Opponent (final)',
+            'seriesRunsVersusOpponent': 'Series Runs Scored vs Opponent (up to current game)',
+            'seriesRunsVersusOpponentFinal': 'Series Runs Scored vs Opponent (final)',
+            'seriesScore': 'Series WL Record (up to current game)',
+            'seriesScoreFinal': 'Series WL Record (final)',
         }
+        wlrecordlabels = [
+            'seasonRecord', 'seasonRecordFinal',
+            'playoffsRecord', 'playoffsRecordFinal',
+            'opponentSeasonRecord', 'opponentSeasonRecordFinal',
+            'opponentPlayoffsRecord', 'opponentPlayoffsRecordFinal',
+        ]
         body = []
         for label, description in labels_map.items():
             body.append(description + ":")
-            if label in ['opponentRecord', 'overallRecord']:
-                body.append("%-30s%s"%(at, "-".join([str(j) for j in data[label][at]])))
-                body.append("%-30s%s"%(ht, "-".join([str(j) for j in data[label][ht]])))
+            if label in wlrecordlabels:
+                body.append("%-22s%6s"%(at, "-".join([str(j) for j in data[label][at]])))
+                body.append("%-22s%6s"%(ht, "-".join([str(j) for j in data[label][ht]])))
             elif label in ['odds']:
-                body.append("%-30s%s%%"%(at, data[label][at]))
-                body.append("%-30s%s%%"%(ht, data[label][ht]))
+                body.append("%-22s%6s%%"%(at, data[label][at]))
+                body.append("%-22s%6s%%"%(ht, data[label][ht]))
             else:
-                body.append("%-30s%s"%(at, data[label][at]))
-                body.append("%-30s%s"%(ht, data[label][ht]))
+                body.append("%-22s%6s"%(at, data[label][at]))
+                body.append("%-22s%6s"%(ht, data[label][ht]))
             body.append("")
 
         text = header + [""] + body

@@ -1,7 +1,7 @@
 import os
 import json
 import blaseball_core_game_data as gd
-from .util import NoMatchingGames
+from .util import NoMatchingGames, SEASON_MAX, PLAYOFFS_MAX
 
 class SleuthData(object):
     """
@@ -70,17 +70,41 @@ class SleuthData(object):
                 Millennials: 54,
                 Shoe Thieves: 46
             },
-            overallRecord: {
+            seasonRecord: {
                 Millennials: [32, 17],
                 Shoe Thieves: [30, 19]
             },
-            opponentRecord: {
+            seasonRecordFinal: {
+                Millennials: [X, Y],
+                Shoe Thieves: [Y, X]
+            },
+            opponentSeasonRecord: {
                 Millennials: [5, 4],
                 Shoe Thieves: [4, 5]
             },
-            runsVersusOpponent: {
+            opponentSeasonRecordFinal: {
+                Millennials: [X, Y],
+                Shoe Thieves: [Y, X]
+            },
+            seasonRunsVersusOpponent: {
                 Millennials: 35,
                 Shoe Thieves: 35
+            },
+            seasonRunsVersusOpponentFinal: {
+                Millennials: 35,
+                Shoe Thieves: 35
+            },
+            playoffsRecord: {
+            },
+            playoffsRecordFinal: {
+            },
+            opponentPlayoffsRecord: {
+            },
+            opponentPlayoffsRecordFinal: {
+            },
+            playoffsRunsVersusOpponent: {
+            },
+            playoffsRunsVersusOpponentFinal: {
             },
             seriesRunsVersusOpponent: {
                 Millennials: 5,
@@ -119,12 +143,13 @@ class SleuthData(object):
         sleuth_data['day'] = day
         sleuth_data['playoffs'] = False
 
-        if day > 99:
+        if day0 >= SEASON_MAX:
             sleuth_data['playoffs'] = True
 
         # 0 means not playoffs, will set this later for playoffs games
         sleuth_data['playoffsRound'] = 0
 
+        # -------------------
         # Game things:
 
         # final_score
@@ -139,33 +164,94 @@ class SleuthData(object):
             at: int(round(100*r['awayOdds']))
         }
 
+        # -------------------
         # Season things:
 
-        # overall_record
-        sleuth_data['overallRecord'] = {
-            ht: self.overall_record(ht, season, day),
-            at: self.overall_record(at, season, day)
+        # season w/l record
+        sleuth_data['seasonRecord'] = {
+            ht: self.season_record(ht, season, day),
+            at: self.season_record(at, season, day)
         }
+        if sleuth_data['playoffs']:
+            # playoffs w/l record
+            sleuth_data['playoffsRecord'] = {
+                ht: self.playoffs_record(ht, season, day),
+                at: self.playoffs_record(at, season, day)
+            }
 
-        # opponent_record
-        opp = self.opponent_record(ht, at, season, day)
-        sleuth_data['opponentRecord'] = {
+        # final season w/l record
+        sleuth_data['seasonRecordFinal'] = {
+            ht: self.season_record(ht, season, SEASON_MAX),
+            at: self.season_record(at, season, SEASON_MAX)
+        }
+        if sleuth_data['playoffs']:
+            # final playoffs w/l record
+            sleuth_data['playoffsRecordFinal'] = {
+                ht: self.playoffs_record(ht, season, PLAYOFFS_MAX),
+                at: self.playoffs_record(at, season, PLAYOFFS_MAX)
+            }
+
+        # season w/l record versus opponent
+        opp = self.opponent_season_record(ht, at, season, day)
+        sleuth_data['opponentSeasonRecord'] = {
             ht: opp,
             at: list(reversed(opp))
         }
+        if sleuth_data['playoffs']:
+            # playoffs w/l record versus opponent
+            opp = self.opponent_playoffs_record(ht, at, season, day)
+            sleuth_data['opponentPlayoffsRecord'] = {
+                ht: opp,
+                at: list(reversed(opp))
+            }
 
-        # runs versus opponent
-        oppr = self.opponent_runs_record(ht, at, season, day)
-        sleuth_data['runsVersusOpponent'] = {
+        # final season w/l record versus opponent
+        opp = self.opponent_season_record(ht, at, season, SEASON_MAX)
+        sleuth_data['opponentSeasonRecordFinal'] = {
+            ht: opp,
+            at: list(reversed(opp))
+        }
+        if sleuth_data['playoffs']:
+            # final playoffs w/l record versus opponent
+            opp = self.opponent_playoffs_record(ht, at, season, PLAYOFFS_MAX)
+            sleuth_data['opponentPlayoffsRecordFinal'] = {
+                ht: opp,
+                at: list(reversed(opp))
+            }
+
+        # season runs versus opponent
+        oppr = self.opponent_season_runs(ht, at, season, day)
+        sleuth_data['seasonRunsVersusOpponent'] = {
             ht: oppr[0],
             at: oppr[1]
         }
+        if sleuth_data['playoffs']:
+            # playoffs runs versus opponent
+            oppr = self.opponent_playoffs_runs(ht, at, season, day)
+            sleuth_data['playoffsRunsVersusOpponent'] = {
+                ht: oppr[0],
+                at: oppr[1]
+            }
 
+        # final season runs versus opponent
+        oppr = self.opponent_season_runs(ht, at, season, SEASON_MAX)
+        sleuth_data['seasonRunsVersusOpponentFinal'] = {
+            ht: oppr[0],
+            at: oppr[1]
+        }
+        if sleuth_data['playoffs']:
+            # final playoffs runs versus opponent
+            oppr = self.opponent_playoffs_runs(ht, at, season, PLAYOFFS_MAX)
+            sleuth_data['playoffsRunsVersusOpponentFinal'] = {
+                ht: oppr[0],
+                at: oppr[1]
+            }
 
+        # -------------------
         # Series things:
-        # This is going to require some utility functions
-        if day > 99:
-            res = self.series_scores_playoffs(ht, season, day)
+
+        if day > SEASON_MAX:
+            res = self.series_scores_playoffs(ht, at, season, day)
         else:
             res = self.series_scores(ht, season, day)
 
@@ -210,6 +296,182 @@ class SleuthData(object):
 
         return sleuth_data
 
+    def season_record(self, team, season, day):
+        """
+        Returns the season W/L record for the given
+        team UP TO BUT NOT INCLUDING the specified
+        season and day (does not incl playoffs)
+
+        Format is a list [X, Y]
+        (X = n wins, Y = n losses)
+
+        Season and day parameters are 1-indexed.
+        To get a team's season record, pass in day 100.
+        """
+        wl = [0, 0]
+        day0 = day - 1
+        season0 = season - 1
+        for j in self.data:
+            if j['season']==season0:
+                if j['day']<SEASON_MAX:
+                    if j['day']<day0:
+                        if j['homeTeamNickname']==team:
+                            if j['whoWon']=='home':
+                                wl[0] += 1
+                            else:
+                                wl[1] += 1
+                        elif j['awayTeamNickname']==team:
+                            if j['whoWon']=='away':
+                                wl[0] += 1
+                            else:
+                                wl[1] += 1
+        return wl
+
+    def playoffs_record(self, team, season, day):
+        """
+        Returns the playoffs W/L record for the given
+        team UP TO BUT NOT INCLUDING the specified
+        season and day.
+
+        Format is a list [X, Y]
+        (X = n wins, Y = n losses)
+
+        Season and day parameters are 1-indexed.
+        """
+        wl = [0, 0]
+        day0 = day - 1
+        season0 = season - 1
+        for j in self.data:
+            if j['season']==season0:
+                if j['day']>=SEASON_MAX:
+                    if j['day']<day0:
+                        if j['homeTeamNickname']==team:
+                            if j['whoWon']=='home':
+                                wl[0] += 1
+                            else:
+                                wl[1] += 1
+                        elif j['awayTeamNickname']==team:
+                            if j['whoWon']=='away':
+                                wl[0] += 1
+                            else:
+                                wl[1] += 1
+        return wl
+
+    def opponent_season_record(self, team, versus_team, season, day):
+        """
+        Returns season W/L record of the given team against
+        the given opponent. (The opponent's record
+        is just the reverse, of course.)
+        Does not include playoffs.
+
+        Format is a list [X, Y]
+        (X = n wins, Y = n losses)
+
+        Season and day parameters are 1-indexed.
+        """
+        wl = [0, 0]
+        day0 = day - 1
+        season0 = season - 1
+        for j in self.data:
+            if j['season']==season0:
+                if j['day']<SEASON_MAX:
+                    if j['day']<day0:
+                        if j['homeTeamNickname']==team and j['awayTeamNickname']==versus_team:
+                            if j['whoWon']=='home':
+                                wl[0] += 1
+                            else:
+                                wl[1] += 1
+                        elif j['awayTeamNickname']==team and j['homeTeamNickname']==versus_team:
+                            if j['whoWon']=='away':
+                                wl[0] += 1
+                            else:
+                                wl[1] += 1
+        return wl
+
+    def opponent_playoffs_record(self, team, versus_team, season, day):
+        """
+        Returns playoffs W/L record of the given team against
+        the given opponent. (The opponent's record
+        is just the reverse, of course.)
+
+        Format is a list [X, Y]
+        (X = n wins, Y = n losses)
+
+        Season and day parameters are 1-indexed.
+        """
+        wl = [0, 0]
+        day0 = day - 1
+        season0 = season - 1
+        for j in self.data:
+            if j['season']==season0:
+                if j['day']>=SEASON_MAX:
+                    if j['day']<day0:
+                        if j['homeTeamNickname']==team and j['awayTeamNickname']==versus_team:
+                            if j['whoWon']=='home':
+                                wl[0] += 1
+                            else:
+                                wl[1] += 1
+                        elif j['awayTeamNickname']==team and j['homeTeamNickname']==versus_team:
+                            if j['whoWon']=='away':
+                                wl[0] += 1
+                            else:
+                                wl[1] += 1
+        return wl
+
+    def opponent_season_runs(self, team, versus_team, season, day):
+        """
+        Returns the total number of runs scored by each team
+        when playing each other during regular season games,
+        up to but not including the given day (does not include
+        playoffs).
+
+        Format is a list [X, Y]
+        (X = n runs by team, Y = n runs by versus_team)
+
+        Season and day parameters are 1-indexed.
+        """
+        runs = [0, 0]
+        day0 = day - 1
+        season0 = season - 1
+        for j in self.data:
+            if j['season']==season0:
+                if j['day']<SEASON_MAX:
+                    if j['day']<day0:
+                        if j['homeTeamNickname']==team and j['awayTeamNickname']==versus_team:
+                            runs[0] += j['homeScore']
+                            runs[1] += j['awayScore']
+                        elif j['awayTeamNickname']==team and j['homeTeamNickname']==versus_team:
+                            runs[0] += j['awayScore']
+                            runs[1] += j['homeScore']
+        return runs
+
+    def opponent_playoffs_runs(self, team, versus_team, season, day):
+        """
+        Returns the total number of runs scored by each team
+        when playing each other during regular season games,
+        up to but not including the given day (does not include
+        playoffs).
+
+        Format is a list [X, Y]
+        (X = n runs by team, Y = n runs by versus_team)
+
+        Season and day parameters are 1-indexed.
+        """
+        runs = [0, 0]
+        day0 = day - 1
+        season0 = season - 1
+        for j in self.data:
+            if j['season']==season0:
+                if j['day']>=SEASON_MAX:
+                    if j['day']<day0:
+                        if j['homeTeamNickname']==team and j['awayTeamNickname']==versus_team:
+                            runs[0] += j['homeScore']
+                            runs[1] += j['awayScore']
+                        elif j['awayTeamNickname']==team and j['homeTeamNickname']==versus_team:
+                            runs[0] += j['awayScore']
+                            runs[1] += j['homeScore']
+        return runs
+
     def series_scores(self, team, season, day):
         """
         For a given team, season, and day,
@@ -235,7 +497,7 @@ class SleuthData(object):
 
         The day and season parameters are one-indexed.
         """
-        assert day <= 99
+        assert day <= SEASON_MAX
         day0 = day - 1
         ht = self.game_record['homeTeamNickname']
         at = self.game_record['awayTeamNickname']
@@ -255,7 +517,8 @@ class SleuthData(object):
         season0 = season - 1
         seasons_games = [j for j in self.data if j['season']==season0]
         for this_day0 in range(series_start_day0, series_end_day0+1):
-            todays_games = [j for j in seasons_games if j['day']==day0]
+            this_day = this_day0 + 1
+            todays_games = [j for j in seasons_games if j['day']==this_day0]
             our_game = [j for j in todays_games if (j['homeTeamNickname']==team or j['awayTeamNickname']==team)]
             assert len(our_game)>0
             our_game = our_game[0]
@@ -263,12 +526,12 @@ class SleuthData(object):
                 our_game['homeTeamNickname']: our_game['homeScore'],
                 our_game['awayTeamNickname']: our_game['awayScore']
             }
-            result['days'] = result['days'] + [day]
+            result['days'] = result['days'] + [this_day]
             result['scores'] = result['scores'] + [score]
 
         return result
 
-    def series_scores_playoffs(self, team, season, day):
+    def series_scores_playoffs(self, team, versus_team, season, day):
         """
         For the given team, season, and day,
         compile a list of all scores of all games
@@ -297,7 +560,7 @@ class SleuthData(object):
         The day and season parameters are one-indexed.
         So are the days returned.
         """
-        assert day > 99
+        assert day > SEASON_MAX
         ht = self.game_record['homeTeamNickname']
         at = self.game_record['awayTeamNickname']
 
@@ -306,16 +569,8 @@ class SleuthData(object):
             "scores": []
         }
 
-        # There are currently (always?) 3 playoffs rounds in the postseason.
-        # This may change due to wild card/etc.
-        #
-        # The playoffs round is basically how many opponents they have seen
-        # Round 1 = semi-semi-finals
-        # Round 2 = semi-finals
-        # Round 3 = finals
-        # so keep track of how many opponents we have seen.
-        # Ignore the case of wild cards. We'll just assume 3 rounds. Otherwise we have to look
-        # at all games, not just 1 team.
+        # Every playoffs series lasts 5 games, but not all playoffs series
+        # are 5 games, so day number does not give you series index.
 
         # Loop structure:
         # Start at day 100, loop over each day
@@ -348,15 +603,16 @@ class SleuthData(object):
             if playoffs_day0 == day0:
                 playoffs_round = len(opponents)
 
-            # Record the score in a dict
-            score = {
-                our_game['homeTeamNickname']: our_game['homeScore'],
-                our_game['awayTeamNickname']: our_game['awayScore']
-            }
+            # If versus team is correct too, record the score in a dict
+            if (our_game['homeTeamNickname']==versus_team or our_game['awayTeamNickname']==versus_team):
+                score = {
+                    our_game['homeTeamNickname']: our_game['homeScore'],
+                    our_game['awayTeamNickname']: our_game['awayScore']
+                }
 
-            # Append days and corresponding scores to final data structure
-            result['days'] = result['days'] + [playoffs_day]
-            result['scores'] = result['scores'] + [score]
+                # Append days and corresponding scores to final data structure
+                result['days'] = result['days'] + [playoffs_day]
+                result['scores'] = result['scores'] + [score]
 
         if playoffs_round == 0:
             raise Exception("Error playoffs_round is still 0 after going through all playoffs games")
@@ -365,81 +621,13 @@ class SleuthData(object):
         result['season'] = season
         return result
 
-    def opponent_runs_record(self, team, versus_team, season, day):
-        """
-        Returns numer of runs scored by each team
 
-        Format is a list [X, Y]
-        (X = n runs by team, Y = n runs by versus_team)
 
-        Season and day parameters are 1-indexed.
-        """
-        runs = [0, 0]
-        for j in self.data:
-            if j['season']+1==season:
-                if j['day']<day:
-                    if j['homeTeamNickname']==team and j['awayTeamNickname']==versus_team:
-                        runs[0] += j['homeScore']
-                        runs[1] += j['awayScore']
-                    elif j['awayTeamNickname']==team and j['homeTeamNickname']==versus_team:
-                        runs[0] += j['awayScore']
-                        runs[1] += j['homeScore']
-        return runs
 
-    def opponent_record(self, team, versus_team, season, day):
-        """
-        Returns W/L record of the given team against
-        the given opponent. (The opponent's record
-        is just the reverse, of course.)
 
-        Format is a list [X, Y]
-        (X = n wins, Y = n losses)
 
-        Season and day parameters are 1-indexed.
-        """
-        wl = [0, 0]
-        for j in self.data:
-            if j['season']+1==season:
-                if j['day']<day:
-                    if j['homeTeamNickname']==team and j['awayTeamNickname']==versus_team:
-                        if j['whoWon']=='home':
-                            wl[0] += 1
-                        else:
-                            wl[1] += 1
-                    elif j['awayTeamNickname']==team and j['homeTeamNickname']==versus_team:
-                        if j['whoWon']=='away':
-                            wl[0] += 1
-                        else:
-                            wl[1] += 1
-        return wl
 
-    def overall_record(self, team, season, day):
-        """
-        Returns the overall W/L record for the given
-        team UP TO BUT NOT INCLUDING the specified
-        season and day. (Includes postseason games.)
-
-        Format is a list [X, Y]
-        (X = n wins, Y = n losses)
-
-        Season and day parameters are 1-indexed.
-        To get a team's season record, pass in day 100.
-        """
-        wl = [0, 0]
-        for j in self.data:
-            if j['season']+1==season:
-                if j['day']<day:
-                    if j['homeTeamNickname']==team:
-                        if j['whoWon']=='home':
-                            wl[0] += 1
-                        else:
-                            wl[1] += 1
-                    elif j['awayTeamNickname']==team:
-                        if j['whoWon']=='away':
-                            wl[0] += 1
-                        else:
-                            wl[1] += 1
-        return wl
+    #################################################
 
     def home_wl_record(self, team, season, day):
         """
@@ -453,9 +641,11 @@ class SleuthData(object):
         Season and day parameters are 1-indexed.
         """
         wl = [0, 0]
+        season0 = season - 1
+        day0 = day - 1
         for j in self.data:
-            if j['season']+1==season:
-                if j['day']<day:
+            if j['season']==season0:
+                if j['day']<day0:
                     if j['homeTeamNickname']==team:
                         if j['whoWon']=='home':
                             wl[0] += 1
@@ -473,9 +663,11 @@ class SleuthData(object):
         (X = n wins, Y = n losses)
         """
         wl = [0, 0]
+        season0 = season - 1
+        day0 = day - 1
         for j in self.data:
-            if j['season']+1==season:
-                if j['day']<day:
+            if j['season']==season0:
+                if j['day']<day0:
                     if j['awayTeamNickname']==team:
                         if j['whoWon']=='away':
                             wl[0] += 1
