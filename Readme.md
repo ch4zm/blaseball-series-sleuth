@@ -274,7 +274,7 @@ $ game-finder --season 3 --day 103 --team Lovers | xargs series-sleuth --json -g
 
 ## Python API
 
-If you want to use the series-sleuth tool from Python instead of
+If you want to use the `series-sleuth` tool from Python instead of
 using the command line tool, we provide a function that you can
 import that will return the output of the command in a string.
 
@@ -290,11 +290,12 @@ Then we can import the `series_sleuth()` function from the
 as a list of strings:
 
 ```
-from series_sleuth import series_sleuth
+from series_sleuth.command import series_sleuth
 
 flags = "--json -g e23e6d3-911e-45a6-87d2-3a2efbcbae6f"
 flags = flags.split(" ")
 
-series_sleuth(flags)
+result = series_sleuth(flags)
+print(result)
 ```
 
