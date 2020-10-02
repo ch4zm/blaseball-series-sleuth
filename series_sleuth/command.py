@@ -4,7 +4,6 @@ import json
 import configargparse
 from .view import TextView, JsonView
 from .util import (
-    desanitize_dale,
     get_league_division_team_data,
     CaptureStdout
 )
@@ -86,10 +85,6 @@ def main(sysargs = sys.argv[1:]):
     gid = options.game_id
     if not tsd and not gid:
         raise Exception("Error: you must specify either --game-id or all three of --team/--season/--day")
-
-    # No more user input required, so convert Dale back to utf8
-    if options.team:
-        options.team = desanitize_dale(options.team)
 
     if options.text:
         v = TextView(options)

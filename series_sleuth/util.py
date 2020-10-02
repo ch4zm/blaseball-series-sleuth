@@ -10,11 +10,11 @@ data_path = os.path.abspath(os.path.join(root_path, 'data'))
 
 SHORT2LONG_JSON = os.path.join(data_path, "short2long.json")
 
-DALE_SAFE = "Dale" # for command line
-DALE_UTF8 = "Dal\u00e9" # for display
+DALE_SAFE = "Dale"
+DALE_UTF8 = "Dal\u00e9"
 
-FULL_DALE_SAFE = "Miami Dale" # for command line
-FULL_DALE_UTF8 = "Miami Dal\u00e9" # for display
+FULL_DALE_SAFE = "Miami Dale"
+FULL_DALE_UTF8 = "Miami Dal\u00e9"
 
 SEASON_MAX = 99  # never more than 99 games per season
 PLAYOFFS_MAX = SEASON_MAX + 20  # playoffs never go past 20 games
@@ -25,11 +25,7 @@ class NoMatchingGames(Exception):
 
 
 def get_league_division_team_data():
-    """
-    Get a list of leagues, divisions, and teams.
-    This is for use in creating CLI flag values,
-    so we replace Dal\u00e9 with Dale.
-    """
+    """Get a list of leagues, divisions, and teams."""
     td = json.loads(gd.get_teams_data())
     leagues = sorted(list(td['leagues'].keys()))
     divisions = sorted(list(td['divisions'].keys()))
@@ -37,7 +33,6 @@ def get_league_division_team_data():
     for league in leagues:
         teams += td['leagues'][league]
     teams = sorted(list(teams))
-    teams = [sanitize_dale(s) for s in teams]
     return (leagues, divisions, teams)
 
 
@@ -50,16 +45,6 @@ def get_short2long():
     else:
         raise FileNotFoundError("Missing team nickname to full name data file: %s"%(SHORT2LONG_JSON))
     return short2long
-
-
-def desanitize_dale(s):
-    """Utility function to change sanitized Dale back to unicode"""
-    if s == DALE_SAFE:
-        return DALE_UTF8
-    elif s == FULL_DALE_SAFE:
-        return FULL_DALE_UTF8
-    else:
-        return s
 
 
 def sanitize_dale(s):
