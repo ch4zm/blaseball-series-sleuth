@@ -4,7 +4,7 @@ import json
 import configargparse
 from .view import TextView, JsonView
 from .util import (
-    get_league_division_team_data,
+    get_team_data,
     CaptureStdout
 )
 
@@ -14,7 +14,7 @@ def main(sysargs = sys.argv[1:]):
     p = configargparse.ArgParser()
 
     # These are safe for command line usage (no accent in Dale)
-    _, _, ALLTEAMS = get_league_division_team_data()
+    ALLTEAMS = get_team_data()
 
     p.add('-v',
           '--version',

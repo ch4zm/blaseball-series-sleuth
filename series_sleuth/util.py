@@ -24,16 +24,22 @@ class NoMatchingGames(Exception):
     pass
 
 
-def get_league_division_team_data():
-    """Get a list of leagues, divisions, and teams."""
-    td = json.loads(gd.get_teams_data())
-    leagues = sorted(list(td['leagues'].keys()))
-    divisions = sorted(list(td['divisions'].keys()))
-    teams = []
-    for league in leagues:
-        teams += td['leagues'][league]
+def get_team_data():
+    """
+    Get a list of all leagues, all divisions, and all teams
+    for creating command line flag options - includes old leagues
+    and divisions.
+    """
+    tds = json.loads(gd.get_teams_data())
+    teams = set()
+    for i in range(len(tds)):
+        td = tds[i]
+        teams_ = []
+        for league_ in td['leagues']:
+            teams_ += td['leagues'][league_]
+        teams = teams.union(teams_)
     teams = sorted(list(teams))
-    return (leagues, divisions, teams)
+    return teams
 
 
 def get_short2long():

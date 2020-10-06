@@ -114,6 +114,8 @@ class TextView(BaseView):
         ]
         body = []
         for label, description in labels_map.items():
+            if 'playoffs' in label.lower() and data['playoffs'] is False:
+                continue
             body.append(description + ":")
             if label in wlrecordlabels:
                 body.append("%-22s%6s"%(at, "-".join([str(j) for j in data[label][at]])))
