@@ -12,7 +12,8 @@ This is a command line tool for getting information about blaseball game series.
 ## Installing
 
 ```
-pip install git+https://github.com/ch4zm/blaseball-series-sleuth.git#egg=game_sleuth
+pip install git+https://github.com/ch4zm/blaseball-core-game-data.git#egg=blaseball_core_game_data
+pip install git+https://github.com/ch4zm/blaseball-series-sleuth.git#egg=blaseball_game_sleuth
 ```
 
 ## What Information?
