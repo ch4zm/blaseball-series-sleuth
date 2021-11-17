@@ -4,9 +4,16 @@ This is a command line tool for getting information about blaseball game series.
 
 ## Table of Contents
 
+* [Installing](#installing)
 * [What Information?](#what-information)
 * [Example](#example)
 * [Python API](#python-api)
+
+## Installing
+
+```
+pip install git+https://github.com/ch4zm/blaseball-series-sleuth.git#egg=game_sleuth
+```
 
 ## What Information?
 
